@@ -573,10 +573,10 @@ namespace Reko.Analysis
                     {
                         n = phaseNumbering.Count + 1;
                         phaseNumbering.Add(phase, n);
-                    }
-                    testSvc.ReportProcedure($"analysis_{n:00}_{phase}.txt", $"// {proc.Name} ===========", proc);
-                }
             }
+                    testSvc.ReportProcedure($"analysis_{n:00}_{phase}.txt", $"// {proc.Name} ===========", proc);
+        }
+    }
         }
     }
 }

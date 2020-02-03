@@ -142,6 +142,12 @@ namespace Reko.UnitTests.Mocks
             return Reg(name, PrimitiveType.Byte);
         }
 
+        public override Identifier Reg8(string name, int number)
+        {
+            var id = base.Reg8(name, number);
+            return MakeSsaIdentifier(id, name);
+        }
+
         public override Statement Emit(Instruction instr)
         {
             var stm = base.Emit(instr);
