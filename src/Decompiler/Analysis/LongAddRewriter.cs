@@ -261,8 +261,14 @@ namespace Reko.Analysis
         {
             if (dst is Identifier id)
                 return ssa.Identifiers[id];
-            else
-                return null;
+            else if (dst is MkSequence seq)
+            {
+                //$TODO what if there are many identifiers?
+                foreach (var e in seq.Expressions)
+                    if (e is Identifier eId)
+                        return ssa.Identifiers[eId];
+            }
+            return null;
         }
 
         public void Transform()
@@ -271,6 +277,8 @@ namespace Reko.Analysis
             {
                 if (listener.IsCanceled())
                     return;
+                if (block.Name == "l0800_D23F")
+                    block.Name.ToString(); //$DEBUG
                 ReplaceLongAdditions(block);
             }
         }
@@ -295,6 +303,8 @@ namespace Reko.Analysis
                 var hiInstr = FindUsingInstruction(block, cond.FlagGroup, loInstr);
                 if (hiInstr == null)
                     continue;
+                if (block.Name == "l0800_D23F")
+                    block.Name.ToString(); //$DEBUG
 
                 CreateLongInstruction(loInstr, hiInstr);
             }
@@ -341,7 +351,7 @@ namespace Reko.Analysis
             return null;
         }
 
-        public bool IsCarryFlag(Expression exp)
+        public bool IsCarryFlag(Expression? exp)
         {
             if (!(exp is Identifier cf))
                 return false;
@@ -465,21 +475,43 @@ namespace Reko.Analysis
         /// with the left and right side of the ADC/SBC instruction.</returns>
         public AddSubCandidate? MatchAdcSbc(Statement stm)
         {
-            if (!adcPattern.Match(stm.Instruction))
-                return null;
-            if (!IsCarryFlag(adcPattern.CapturedExpressions("cf")!))
-                return null;
-            var op = adcPattern.CapturedOperators("op2")!;
-            if (!IsIAddOrISub(op))
-                return null;
-            return new AddSubCandidate(
-                op,
-                adcPattern.CapturedExpressions("left")!,
-                adcPattern.CapturedExpressions("right")!)
+            if (adcPattern.Match(stm.Instruction))
             {
-                Dst = adcPattern.CapturedExpressions("dst")!,
-                Statement = stm
-            };
+                if (!IsCarryFlag(adcPattern.CapturedExpressions("cf")))
+                    return null;
+                var op = adcPattern.CapturedOperators("op2");
+                if (op is null || !IsIAddOrISub(op))
+                    return null;
+                return new AddSubCandidate(
+                    op,
+                    adcPattern.CapturedExpressions("left")!,
+                    adcPattern.CapturedExpressions("right")!)
+                {
+                    Dst = adcPattern.CapturedExpressions("dst")!,
+                    Statement = stm
+                };
+            }
+            else if (addPattern.Match(stm.Instruction))
+            {
+                if (!IsCarryFlag(addPattern.CapturedExpressions("right")))
+                    return null;
+                var op = addPattern.CapturedOperators("op");
+                if (op is null || !IsIAddOrISub(op))
+                    return null;
+                var left = addPattern.CapturedExpressions("left")!;
+                return new AddSubCandidate(
+                    op,
+                    left,
+                    Constant.Zero(left.DataType))
+                {
+                    Dst = addPattern.CapturedExpressions("dst")!,
+                    Statement = stm
+                };
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public AddSubCandidate? MatchAddSub(Statement stm)

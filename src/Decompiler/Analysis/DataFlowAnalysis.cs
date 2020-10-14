@@ -471,16 +471,39 @@ namespace Reko.Analysis
                 var vp = new ValuePropagator(program.SegmentMap, ssa, program.CallGraph, dynamicLinker, eventListener);
                 vp.Transform();
                 DumpWatchedProcedure("vp", "After first VP", ssa.Procedure);
+                ssa.Validate(s =>
+                {
+                    Console.WriteLine("== ERROR in SSA {0}", s);
+                    ssa.Write(Console.Out);
+                    ssa.Procedure.Write(false, Console.Out);
+                });
 
                 // Fuse additions and subtractions that are linked by the carry flag.
                 var larw = new LongAddRewriter(ssa, eventListener);
                 larw.Transform();
+                ssa.Validate(s =>
+                {
+                    Console.WriteLine("== ERROR after larw {0}", s);
+                    ssa.Write(Console.Out);
+                    ssa.Procedure.Write(false, Console.Out);
+                });
 
                 // Propagate condition codes and registers. 
                 var cce = new ConditionCodeEliminator(program, ssa, eventListener);
                 cce.Transform();
-
+                ssa.Validate(s =>
+                {
+                    Console.WriteLine("== ERROR after cce {0}", s);
+                    ssa.Write(Console.Out);
+                    ssa.Procedure.Write(false, Console.Out);
+                });
                 vp.Transform();
+                ssa.Validate(s =>
+                {
+                    Console.WriteLine("== ERROR in SSA {0}", s);
+                    ssa.Write(Console.Out);
+                    ssa.Procedure.Write(false, Console.Out);
+                });
                 DumpWatchedProcedure("cce", "After CCE", ssa.Procedure);
 
                 // Now compute SSA for the stack-based variables as well. That is:

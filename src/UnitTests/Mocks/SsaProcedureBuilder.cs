@@ -155,6 +155,12 @@ namespace Reko.UnitTests.Mocks
             return stm;
         }
 
+        public Identifier FramePointer()
+        {
+            var sidFp = Ssa.Identifiers.Add(Frame.FramePointer, null, null, false);
+            return sidFp.Identifier;
+        }
+
         private Identifier MakeSsaIdentifier(Identifier id, string name)
         {
             var idNew = new Identifier(name, id.DataType, id.Storage);

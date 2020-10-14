@@ -95,18 +95,18 @@ namespace Reko.Analysis
                 {
                     try
                     {
-                    useStm = u;
+                        useStm = u;
 
                         trace.Inform("CCE:   used {0}", useStm.Instruction);
-                    useStm.Instruction.Accept(this);
+                        useStm.Instruction.Accept(this);
                         trace.Inform("CCE:    now {0}", useStm.Instruction);
-                }
+                    }
                     catch (Exception ex)
                     {
                         var loc = listener.CreateStatementNavigator(program, u);
                         listener.Error(loc, ex, "An error occurred while eliminating condition codes in procedure {0}.", ssa.Procedure.Name);
-            }
-        }
+                    }
+                }
             }
         }
 
@@ -332,10 +332,10 @@ namespace Reko.Analysis
         private Instruction TransformAddOrSub(Assignment a, BinaryExpression binUse)
         {
             Expression u = binUse.Right;
-            Cast? c = null;
+            Slice? c = null;
             if (u != sidGrf!.Identifier && !this.aliases.Contains(u))
             {
-                c = binUse.Right as Cast;
+                c = binUse.Right as Slice;
                 if (c != null)
                     u = c.Expression;
             }
