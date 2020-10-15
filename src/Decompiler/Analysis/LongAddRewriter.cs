@@ -128,9 +128,9 @@ namespace Reko.Analysis
             var totalSize = PrimitiveType.Create(
                 Domain.SignedInt | Domain.UnsignedInt,
                 loCandidate.Dst!.DataType.BitSize + hiCandidate.Dst!.DataType.BitSize);
-            var left = CreateCandidate(loCandidate.Left, hiCandidate.Left, totalSize);
-            var right = CreateCandidate(loCandidate.Right, hiCandidate.Right, totalSize);
-            this.dst = CreateCandidate(loCandidate.Dst, hiCandidate.Dst, totalSize);
+            var left = CreateWideExpression(loCandidate.Left, hiCandidate.Left, totalSize);
+            var right = CreateWideExpression(loCandidate.Right, hiCandidate.Right, totalSize);
+            this.dst = CreateWideExpression(loCandidate.Dst, hiCandidate.Dst, totalSize);
             var stmts = hiCandidate.Statement!.Block.Statements;
             var linAddr = hiCandidate.Statement.LinearAddress;
             var iStm = FindInsertPosition(loCandidate, hiCandidate, stmts);
@@ -277,8 +277,6 @@ namespace Reko.Analysis
             {
                 if (listener.IsCanceled())
                     return;
-                if (block.Name == "l0800_D23F")
-                    block.Name.ToString(); //$DEBUG
                 ReplaceLongAdditions(block);
             }
         }
@@ -303,9 +301,7 @@ namespace Reko.Analysis
                 var hiInstr = FindUsingInstruction(block, cond.FlagGroup, loInstr);
                 if (hiInstr == null)
                     continue;
-                if (block.Name == "l0800_D23F")
-                    block.Name.ToString(); //$DEBUG
-
+                block.Write(Console.Out);
                 CreateLongInstruction(loInstr, hiInstr);
             }
         }
@@ -395,7 +391,7 @@ namespace Reko.Analysis
             return null;
         }
 
-        private Expression CreateCandidate(Expression expLo, Expression expHi, DataType totalSize)
+        private Expression CreateWideExpression(Expression expLo, Expression expHi, DataType totalSize)
         {
             if (expLo is Identifier idLo && expHi is Identifier idHi)
             {

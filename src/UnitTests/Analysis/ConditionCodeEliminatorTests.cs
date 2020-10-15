@@ -96,7 +96,7 @@ namespace Reko.UnitTests.Analysis
         private Expression RorC(Expression expr, Expression count, Expression carry)
         {
             return m.Fn(
-                new PseudoProcedure(PseudoProcedure.RorC, expr.DataType, 2),
+                new IntrinsicProcedure(IntrinsicProcedure.RorC, true, expr.DataType, 2),
                 expr, count, carry);
         }
 
@@ -831,7 +831,8 @@ ProcedureBuilder_exit:
 
 ";
             #endregion
-            RunStringTest(sExp, m => {
+            RunStringTest(sExp, m =>
+            {
                 var RolC = new ProcedureConstant(PrimitiveType.Ptr32, new IntrinsicProcedure(
                     IntrinsicProcedure.RolC, true, PrimitiveType.Word16, 3));
                 var r1 = m.Reg16("r1", 1);
@@ -840,7 +841,7 @@ ProcedureBuilder_exit:
                 var C = m.Frame.EnsureFlagGroup(new FlagGroupStorage(psw, 1, "C", PrimitiveType.Bool));
                 var NZVC = m.Frame.EnsureFlagGroup(new FlagGroupStorage(psw, 0xF, "NZVC", PrimitiveType.Word16));
                 var tmp = m.Frame.CreateTemporary("tmp", PrimitiveType.Word16);
-                m.Assign(r1, m.Shl(r1 , m.Int16(1)));
+                m.Assign(r1, m.Shl(r1, m.Int16(1)));
                 m.Assign(NZVC, m.Cond(r1));
                 m.Assign(tmp, r0);
                 m.Assign(r0, m.Fn(RolC, r0, m.Int16(1), C));
@@ -849,6 +850,7 @@ ProcedureBuilder_exit:
                 m.MStore(m.Word16(0x1236), r1);
                 m.Return();
             });
+        }
 
         [Test]
         [Category(Categories.UnitTests)]

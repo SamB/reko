@@ -420,28 +420,27 @@ namespace Reko.UnitTests.Analysis
             });
 
         [Test]
-        public void LarwAdd16to32()
+        public void Larw_Add16to32()
         {
             var sExp =
             #region Expected
 @"l1:
-	dx_ax_20 = SEQ(dx, ax)
-	dx_ax_21 = dx_ax_20 + SEQ(0<16>, wArg02)
-	ax_4 = SLICE(dx_ax_21, word16, 0) (alias)
-	dx_8 = SLICE(dx_ax_21, word16, 16) (alias)
+	dx_ax_17 = SEQ(dx, ax)
+	dx_ax_18 = dx_ax_17 + SEQ(0<16>, Mem0[bx + 2<16>:word16])
+	ax_4 = SLICE(dx_ax_18, word16, 0) (alias)
+	dx_8 = SLICE(dx_ax_18, word16, 16) (alias)
 	SCZ_5 = cond(ax_4)
 	C_7 = SLICE(SCZ_5, bool, 2) (alias)
-	dx_ax_22 = SEQ(dx_8, ax_4)
-	stack_stack_23 = SEQ(wArg08, wArg06)
-	dx_ax_24 = dx_ax_22 + stack_stack_23
-	ax_9 = SLICE(dx_ax_24, word16, 0) (alias)
-	dx_12 = SLICE(dx_ax_24, word16, 16) (alias)
+	dx_ax_19 = SEQ(dx_8, ax_4)
+	dx_ax_20 = dx_ax_19 + Mem0[bx + 6<16>:ui32]
+	ax_9 = SLICE(dx_ax_20, word16, 0) (alias)
+	dx_12 = SLICE(dx_ax_20, word16, 16) (alias)
 	SCZ_10 = cond(ax_9)
 	C_11 = SLICE(SCZ_10, bool, 2) (alias)
 	SCZ_13 = cond(dx_12)
-	C_17 = SLICE(SCZ_13, bool, 2) (alias)
-	S_18 = SLICE(SCZ_13, bool, 0) (alias)
-	Z_19 = SLICE(SCZ_13, bool, 1) (alias)
+	C_14 = SLICE(SCZ_13, bool, 2) (alias)
+	S_15 = SLICE(SCZ_13, bool, 0) (alias)
+	Z_16 = SLICE(SCZ_13, bool, 1) (alias)
 	return
 ";
             #endregion
@@ -467,16 +466,15 @@ namespace Reko.UnitTests.Analysis
                 //m.AddDefToEntryBlock(fp);
                 //m.AddDefToEntryBlock(ax_1);
                 //m.AddDefToEntryBlock(dx_2);
-                var fp = m.Frame.FramePointer;
-                m.Assign(ax, m.IAdd(ax, m.Mem16(m.IAdd(fp, 2))));
+                m.Assign(ax, m.IAdd(ax, m.Mem16(m.IAdd(bx, 2))));
                 m.Assign(SCZ, m.Cond(ax));
                 //m.Alias(CF, m.Slice(PrimitiveType.Bool, SCZ, 1));
                 m.Assign(dx, m.IAdd(dx, CF));
 
-                m.Assign(ax, m.IAdd(ax, m.Mem16(m.IAdd(fp, 6))));
+                m.Assign(ax, m.IAdd(ax, m.Mem16(m.IAdd(bx, 6))));
                 m.Assign(SCZ, m.Cond(ax));
                 //m.Alias(CF, m.Slice(PrimitiveType.Bool, SCZO, 1));
-                m.Assign(dx, m.IAdd(m.IAdd(dx, m.Mem16(m.IAdd(fp, 8))), CF));
+                m.Assign(dx, m.IAdd(m.IAdd(dx, m.Mem16(m.IAdd(bx, 8))), CF));
                 m.Assign(SCZ, m.Cond(dx));
                 this.block = m.Block;
                 m.Return();
